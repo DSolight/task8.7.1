@@ -81,7 +81,7 @@ btnOver.addEventListener('click', function() {
 // Кнопка меньше
 btnLess.addEventListener('click', function() {
   if (gameRun) {
-    if (minValue === maxValue) {
+    if (minValue >= maxValue) {
       const phraseRandom = Math.round(Math.random());
       const answerPhrase = (phraseRandom === 1) ?
         `Вы загадали неправильное число!\n\u{1F914}` :
@@ -90,21 +90,30 @@ btnLess.addEventListener('click', function() {
       gameRun = false;
     } else {
       maxValue = answerNumber - 1;
-      answerNumber = Math.floor((minValue + maxValue) / 2);
-      orderNumber++;
-      orderNumberField.innerText = orderNumber;
-      let randomValue = Math.floor(Math.random() * 3);
-      let answerPhrase; // Разные варианты ответов
-      if (randomValue === 0) {
-        answerPhrase = `Это число ${numberToText(answerNumber)}?`;
-      } else if (randomValue === 1) {
-        answerPhrase = `Вы загадали число ${numberToText(answerNumber)}?`;
-      } else if (randomValue === 2) {
-        answerPhrase = `Наверное, это число ${numberToText(answerNumber)}?`;
+      if (minValue > maxValue) {
+        const phraseRandom = Math.round(Math.random());
+        const answerPhrase = (phraseRandom === 1) ?
+          `Вы загадали неправильное число!\n\u{1F914}` :
+          `Я сдаюсь..\n\u{1F92F}`;
+        answerField.innerText = answerPhrase;
+        gameRun = false;
       } else {
-        answerPhrase = `Может быть, это число ${numberToText(answerNumber)}?`;
-      };
-      answerField.innerText = answerPhrase;
+        answerNumber = Math.floor((minValue + maxValue) / 2);
+        orderNumber++;
+        orderNumberField.innerText = orderNumber;
+        let randomValue = Math.floor(Math.random() * 3);
+        let answerPhrase;
+        if (randomValue === 0) {
+          answerPhrase = `Это число ${numberToText(answerNumber)}?`;
+        } else if (randomValue === 1) {
+          answerPhrase = `Вы загадали число ${numberToText(answerNumber)}?`;
+        } else if (randomValue === 2) {
+          answerPhrase = `Наверное, это число ${numberToText(answerNumber)}?`;
+        } else {
+          answerPhrase = `Может быть, это число ${numberToText(answerNumber)}?`;
+        };
+        answerField.innerText = answerPhrase;
+      }
     }
   }
 });
@@ -137,67 +146,33 @@ btnRetry.addEventListener('click', function() {
 // Функция преобразования числа в текст
 function numberToWords(answerNumber) {
   if (answerNumber < 0) {
-    return 'минус ' + numberToWords(-answerNumber);
-  } else if (answerNumber == 0) {
-    return 'ноль';
-  } else {
-    let result = ' ';
-    if (answerNumber >= 100) {
-      switch (Math.floor(answerNumber / 100)) {
-        case 1: result = 'cто '; break;
-        case 2: result = 'двести '; break;
-        case 3: result = 'триста '; break;
-        case 4: result = 'четыреста '; break;
-        case 5: result = 'пятьсот '; break;
-        case 6: result = 'шестьсот '; break;
-        case 7: result = 'семьсот '; break;
-        case 8: result = 'восемьсот '; break;
-        case 9: result = 'девятьсот '; break;
-      }
-      answerNumber %= 100;
-    }
-    
-    switch (Math.floor(answerNumber / 10)) {
-      case 2: result += 'двадцать '; break;
-      case 3: result += 'тридцать '; break;
-      case 4: result += 'сорок '; break;
-      case 5: result += 'пятьдесят '; break;
-      case 6: result += 'шестьдесят '; break;
-      case 7: result += 'семьдесят '; break;
-      case 8: result += 'восемьдесят '; break;
-      case 9: result += 'девяносто '; break;
-    }
-    
-    if (answerNumber >= 20 || answerNumber === 0) {
-      switch (answerNumber % 10) {
-        case 0: result += ''; break;
-        case 1: result += 'один'; break;
-        case 2: result += 'два'; break;
-        case 3: result += 'три'; break;
-        case 4: result += 'четыре'; break;
-        case 5: result += 'пять'; break;
-        case 6: result += 'шесть'; break;
-        case 7: result += 'семь'; break;
-        case 8: result += 'восемь'; break;
-        case 9: result += 'девять'; break;
-      }
-    } else {
-      switch (answerNumber) {
-        case 10: result += 'десять'; break;
-        case 11: result += 'одиннадцать'; break;
-        case 12: result += 'двенадцать'; break;
-        case 13: result += 'тринадцать'; break;
-        case 14: result += 'четырнадцать'; break;
-        case 15: result += 'пятнадцать'; break;
-        case 16: result += 'шестнадцать'; break;
-        case 17: result += 'семнадцать'; break;
-        case 18: result += 'восемнадцать'; break;
-        case 19: result += 'девятнадцать'; break;
-      }
-    }
-    return result;
+      return 'минус ' + numberToWords(-answerNumber);
   }
-};
+  if (answerNumber == 0) {
+      return 'ноль';
+  }
+
+  const words = [];
+  if (answerNumber >= 100) {
+      const hundreds = Math.floor(answerNumber / 100);
+      words.push(['сто', 'двести', 'триста', 'четыреста', 'пятьсот', 'шестьсот', 'семьсот', 'восемьсот', 'девятьсот'][hundreds - 1]);
+      answerNumber %= 100;
+  }
+
+  if (answerNumber >= 20) {
+      const tens = Math.floor(answerNumber / 10);
+      words.push(['двадцать', 'тридцать', 'сорок', 'пятьдесят', 'шестьдесят', 'семьдесят', 'восемьдесят', 'девяносто'][tens - 2]);
+      answerNumber %= 10;
+  }
+
+  if (answerNumber >= 10 && answerNumber <= 19) {
+      words.push(['десять', 'одиннадцать', 'двенадцать', 'тринадцать', 'четырнадцать', 'пятнадцать', 'шестнадцать', 'семнадцать', 'восемнадцать', 'девятнадцать'][answerNumber - 10]);
+  } else if (answerNumber > 0) {
+      words.push(['один', 'два', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять'][answerNumber - 1]);
+  }
+
+  return words.join(' ');
+}
 
 // функция отображения текста в зависимости от количества символов
 function numberToText(answerNumber) {  
